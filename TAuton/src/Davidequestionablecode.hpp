@@ -1,5 +1,8 @@
 #include "main.h"
 
+void Davidequestionablecode() {
+  opcontrol();
+}
 /**
  * A callback function for LLEMU's center button.
  *
@@ -27,6 +30,7 @@ void initialize() {
 	pros::lcd::set_text(1, "Hello PROS User!");
 
 	pros::lcd::register_btn1_cb(on_center_button);
+
 }
 
 /**
@@ -77,8 +81,12 @@ void opcontrol() {
 	pros::Controller master(pros::E_CONTROLLER_MASTER);
 	pros::MotorGroup left_mg({1, -2, 3});    // Creates a motor group with forwards ports 1 & 3 and reversed port 2
 	pros::MotorGroup right_mg({-4, 5, -6});  // Creates a motor group with forwards port 5 and reversed ports 4 & 6
+	pros::MotorGroup left_F{(11, -12)}; // Forward left motors at 11 and -12
+	pros::MotorGroup right_F{(1, -2)}; // Forward right motors at 1 and -2
+	pros::MotorGroup left_R{(20, 19)}; // Rear left motors at 20 and 19	
+	pros::MotorGroup right_R{(9, 10)}; // Rear right motors at 9 and 10
 
-
+	drivetrain();
 	while (true) {
 		pros::lcd::print(0, "%d %d %d", (pros::lcd::read_buttons() & LCD_BTN_LEFT) >> 2,
 		                 (pros::lcd::read_buttons() & LCD_BTN_CENTER) >> 1,
@@ -94,7 +102,7 @@ void opcontrol() {
 }
 /**
  * Things to declare and port 
- * controller - controller1 16 
+ * controller - controller1
  * Forward left motor - LeftMotorsF 11, -12
  * Rear right motor - RightMotorsR, 9,10
  * Forward right motor - RightotorsF 1, -2
@@ -103,30 +111,36 @@ void opcontrol() {
  */
 void drivetrain(void) {
   while (true) {
-    int vertical = Controller1.Axis3.position();
-    int horizontal = Controller1.Axis1.position();
-    int strafe = Controller1.Axis4.position();
+	pros::Controller master(pros::E_CONTROLLER_MASTER);
+	pros::MotorGroup left_F{(11, -12)}; // Forward left motors at 11 and -12
+	pros::MotorGroup right_F{(1, -2)}; // Forward right motors at 1 and -2
+	pros::MotorGroup left_R{(20, 19)}; // Rear left motors at 20 and 19	
+	pros::MotorGroup right_R{(9, 10)}; // Rear right motors at 9 and 10
 
+    int vertical = master.get_analog(ANALOG_LEFT_Y);   // forward/back
+    int horizontal = master.get_analog(ANALOG_RIGHT_X); // turning
+    int strafe = master.get_analog(ANALOG_LEFT_X);     // strafing
     
 
     //LeftMotors.setVelocity(leftSpeed, percent);
     //RightMotors.setVelocity(rightSpeed, percent)
-    topleft = vertical + strafe;
-    topright = vertical- strafe;
+    double topleft = vertical + strafe;
+    double topright = vertical- strafe;
   
 
     //wheels.spin(forward);
 
 
     // drivetrain
-    RightMotorsF.setVelocity(topright- horizontal, percent);
-    LeftMotorsR.setVelocity(topright+ horizontal, percent);
-    RightMotorsR.setVelocity(topleft - horizontal, percent);
-    LeftMotorsF.setVelocity(topleft+ horizontal, percent);
+    right_F.move(topright - horizontal);
+    left_R.move(topright + horizontal);
+    right_R.move(topleft - horizontal);
+    left_F.move(topleft + horizontal);
     //spinning
     
 
       
-    wait(20, msec);
+    pros::delay(20); // Sleep the task for a short amount of time to
+				 // prevent wasted resources.
     }
 }
