@@ -1,5 +1,13 @@
 #include "main.h"
-
+#include <cmath>
+#include <algorithm>
+pros::Controller master(pros::E_CONTROLLER_MASTER);
+pros::MotorGroup left_F{(11, -12)}; // Forward left motors at 11 and -12
+pros::MotorGroup right_F{(1, -2)}; // Forward right motors at 1 and -2
+pros::MotorGroup left_R{(20, 19)}; // Rear left motors at 20 and 19	
+pros::MotorGroup right_R{(9, 10)}; // Rear right motors at 9 and 10
+pros::MotorGroup allwheels({11, -12, 1, -2, 20, 19, 9, 10}); // all the wheels together
+double circumference (2*3.14159); //wheel circumference in inches
 void Davidequestionablecode() {
   opcontrol();
 }
@@ -79,12 +87,7 @@ void autonomous() {}
  */
 void opcontrol() {
 	pros::Controller master(pros::E_CONTROLLER_MASTER);
-	pros::MotorGroup left_mg({1, -2, 3});    // Creates a motor group with forwards ports 1 & 3 and reversed port 2
-	pros::MotorGroup right_mg({-4, 5, -6});  // Creates a motor group with forwards port 5 and reversed ports 4 & 6
-	pros::MotorGroup left_F{(11, -12)}; // Forward left motors at 11 and -12
-	pros::MotorGroup right_F{(1, -2)}; // Forward right motors at 1 and -2
-	pros::MotorGroup left_R{(20, 19)}; // Rear left motors at 20 and 19	
-	pros::MotorGroup right_R{(9, 10)}; // Rear right motors at 9 and 10
+
 
 	drivetrain();
 	while (true) {
@@ -95,8 +98,8 @@ void opcontrol() {
 		// Arcade control scheme
 		int dir = master.get_analog(ANALOG_LEFT_Y);    // Gets amount forward/backward from left joystick
 		int turn = master.get_analog(ANALOG_RIGHT_X);  // Gets the turn left/right from right joystick
-		left_mg.move(dir - turn);                      // Sets left motor voltage
-		right_mg.move(dir + turn);                     // Sets right motor voltage
+		//left_mg.move(dir - turn);                      // Sets left motor voltage
+		//right_mg.move(dir + turn);                     // Sets right motor voltage
 		pros::delay(20);                               // Run for 20 ms then update
 	}
 }
@@ -144,3 +147,34 @@ void drivetrain(void) {
 				 // prevent wasted resources.
     }
 }
+
+
+void move(double degree, double length) {
+  
+  double radians = degree*3.1415/180;
+
+  double y = sin(radians);
+  double x = cos(radians);
+
+
+  double maxval = std::max(abs(x+y), abs(x-y),1);
+
+
+  double frontleft = y + x;
+  double frontright = y - x;
+  double frontleft = frontleft/ maxval;
+  double frontright = frontright/ maxval;
+
+
+  double spins = length/ circumference;
+  while (true) {
+
+	left_F.move_velocity(50 * frontleft);   
+	right_R.move_velocity(50 * frontleft);
+
+	right_F.move_velocity(50 * frontright);
+	left_R.move_velocity(50 * frontright);
+
+	// Rotate group by "spins" revolutions at 100 RPM
+	allwheels.move_relative(spins * 360, 100); 
+  }}
