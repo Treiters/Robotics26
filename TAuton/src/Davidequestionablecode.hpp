@@ -115,10 +115,10 @@ void opcontrol() {
 void drivetrain(void) {
   while (true) {
 	pros::Controller master(pros::E_CONTROLLER_MASTER);
-	pros::MotorGroup left_F{(11, -12)}; // Forward left motors at 11 and -12
-	pros::MotorGroup right_F{(1, -2)}; // Forward right motors at 1 and -2
-	pros::MotorGroup left_R{(20, 19)}; // Rear left motors at 20 and 19	
-	pros::MotorGroup right_R{(9, 10)}; // Rear right motors at 9 and 10
+	pros::MotorGroup right_F{(11, -12)}; // Forward left motors at 11 and -12
+	pros::MotorGroup left_F{(20, -19)}; // Forward right motors at 1 and -2
+	pros::MotorGroup right_R{(1, 2)}; // Rear left motors at 20 and 19	
+	pros::MotorGroup left_R{(9, 10)}; // Rear right motors at 9 and 10
 
     int vertical = master.get_analog(ANALOG_LEFT_Y);   // forward/back
     int horizontal = master.get_analog(ANALOG_RIGHT_X); // turning
@@ -178,3 +178,11 @@ void move(double degree, double length) {
 	// Rotate group by "spins" revolutions at 100 RPM
 	allwheels.move_relative(spins * 360, 100); 
   }}
+
+void turn(double degree) {
+	double horizontal = degree*circumference;
+	right_F.move(-horizontal);
+    left_R.move(horizontal);
+    right_R.move(-horizontal);
+    left_F.move(horizontal);
+}
