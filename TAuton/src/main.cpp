@@ -5,13 +5,13 @@
 pros::Controller master(pros::E_CONTROLLER_MASTER);
 
 // Individual motors (with correct reversed flags)
-pros::Motor right_F1(-11);  // reversed
-pros::Motor right_F2(-12);  // reversed
-pros::Motor left_F1(-20);   // reversed
-pros::Motor left_F2(-2);    // reversed
-pros::Motor right_R1(20);
-pros::Motor right_R2(19);
-pros::Motor left_R1(9);    
+pros::Motor right_F1(-11); 
+pros::Motor right_F2(12);  
+pros::Motor left_F1(-20);   
+pros::Motor left_F2(2);    
+pros::Motor right_R1(-20);
+pros::Motor right_R2(-19);
+pros::Motor left_R1(9);    //1 = forward front motor or below rear motor
 
 
 pros::Motor left_R2(10);
