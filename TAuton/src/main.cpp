@@ -12,8 +12,6 @@ pros::Motor left_F2(2);
 pros::Motor right_R1(-20);
 pros::Motor right_R2(-19);
 pros::Motor left_R1(9);    //1 = forward front motor or below rear motor
-
-
 pros::Motor left_R2(10);
 
 // Groups (each side)
