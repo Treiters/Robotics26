@@ -13,6 +13,9 @@ pros::Motor right_R1(-20);
 pros::Motor right_R2(-19);
 pros::Motor left_R1(9);    //1 = 11W , 2 = 5W 
 pros::Motor left_R2(10);
+pros::Motor intake(1);
+pros::Motor indexer(2);
+pros::Motor topintake(3);
 
 // Groups (each side)
 pros::MotorGroup right_F({-11,-12});
@@ -24,6 +27,12 @@ pros::MotorGroup left_R({-9,-10});
 pros::MotorGroup allwheels({
     -11, -12, -1, -2, 20, 19, 9, 10 
 });
+
+
+pros::ADIDigitalOut flap(4);
+
+pros::ADIDigitalOut scraper(5);
+
 
 double circumference = 2 * 3.14159; // wheel circumference in inches
 
@@ -71,6 +80,83 @@ void drivetrain(void) {
         left_R.move(topright + horizontal);
         right_R.move(topleft - horizontal);
         left_F.move(topleft + horizontal);
+
+        // Example inside opcontrol()
+
+while (true) {
+
+    // --- R1 ---
+    if (master.get_digital(DIGITAL_R1)) {
+        intake.move(127);
+        topintake.move(127);
+        flap.set_value(true);
+    } else {
+        flap.set_value(false);
+        intake.move(0);
+        topintake.move(0);
+    }
+
+    // --- R2 ---
+    if (master.get_digital(DIGITAL_R2)) {
+        indexer.move(127);
+        intake.move(127);
+        topintake.move(127);
+    } else {
+        indexer.move(0);
+        // don’t stop intake/top5 here since R1 also controls them
+        // handled above
+    }
+
+    // --- L1 ---
+    if (master.get_digital(DIGITAL_L1)) {
+        intake.move(-127);
+        indexer.move(127);
+    } else {
+        // stop if not pressed
+        // careful: indexer also used by L2/R2, so don’t overwrite those
+        if (!master.get_digital(DIGITAL_R2) &&
+            !master.get_digital(DIGITAL_L2)) {
+            indexer.move(0);
+        }
+        if (!master.get_digital(DIGITAL_R1) &&
+            !master.get_digital(DIGITAL_R2) &&
+            !master.get_digital(DIGITAL_L2)) {
+            intake.move(0);
+        }
+    }
+
+    // --- L2 ---
+    if (master.get_digital(DIGITAL_L2)) {
+        indexer.move(127);
+        intake.move(127);
+        topintake.move(-127);
+    } else {
+        if (!master.get_digital(DIGITAL_R2) &&
+            !master.get_digital(DIGITAL_L1)) {
+            indexer.move(0);
+        }
+        if (!master.get_digital(DIGITAL_R1) &&
+            !master.get_digital(DIGITAL_R2) &&
+            !master.get_digital(DIGITAL_L1)) {
+            intake.move(0);
+        }
+        if (!master.get_digital(DIGITAL_R1) &&
+            !master.get_digital(DIGITAL_R2)) {
+            topintake.move(0);
+        }
+    }
+
+    // --- Up (scraper) ---
+    if (master.get_digital(DIGITAL_UP)) {
+        scraper.set_value(true);
+    } else {
+        scraper.set_value(false);
+    }
+
+    pros::delay(20);
+}
+
+
 
         pros::delay(20);
     }
