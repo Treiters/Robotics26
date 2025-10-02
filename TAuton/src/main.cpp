@@ -73,13 +73,16 @@ void drivetrain(void) {
         int horizontal = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
         int strafe = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X);
 
+        double maxval = std::max({fabs(vertical + strafe +horizontal), fabs(vertical + strafe -horizontal),fabs(vertical - strafe + horizontal), fabs(vertical - strafe -horizontal), 1.0});
+
+
         double topleft = vertical + strafe;
         double topright = vertical - strafe;
 
-        right_F.move(topright - horizontal);
-        left_R.move(topright + horizontal);
-        right_R.move(topleft - horizontal);
-        left_F.move(topleft + horizontal);
+        right_F.move((topright - horizontal)/maxval);
+        left_R.move((topright + horizontal)/maxval);
+        right_R.move((topleft - horizontal)/maxval);
+        left_F.move((topleft + horizontal)/maxval);
 
         // Example inside opcontrol()
 
