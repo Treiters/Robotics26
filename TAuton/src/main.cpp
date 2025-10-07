@@ -35,6 +35,8 @@ pros::ADIDigitalOut scraper(5);
 
 
 double circumference = 2 * 3.14159; // wheel circumference in inches
+bool flapopen = false;
+bool scraperon = false; 
 
 // --- Function Declarations ---
 void drivetrain();
@@ -84,39 +86,42 @@ void drivetrain(void) {
         right_R.move((topleft - horizontal)/maxval);
         left_F.move((topleft + horizontal)/maxval);
 
-        // Example inside opcontrol()
+        // drive part of drivetrain
 
-while (true) {
-
-    // --- R1 ---
+    //R1
     if (master.get_digital(DIGITAL_R1)) {
         intake.move(127);
         topintake.move(127);
-        flap.set_value(true);
+        if (!flapopen) {
+        flap.set_value(true);}
+        flapopen = true;
+        if (flapopen) {
+        flap.set_value(false);}
+        flapopen = false;
     } else {
-        flap.set_value(false);
+        
         intake.move(0);
         topintake.move(0);
     }
 
-    // --- R2 ---
+    //R2
     if (master.get_digital(DIGITAL_R2)) {
         indexer.move(127);
         intake.move(127);
         topintake.move(127);
     } else {
         indexer.move(0);
-        // don’t stop intake/top5 here since R1 also controls them
+        //move all the indexes, when in
         // handled above
     }
 
-    // --- L1 ---
+    //L1
     if (master.get_digital(DIGITAL_L1)) {
         intake.move(-127);
         indexer.move(127);
     } else {
         // stop if not pressed
-        // careful: indexer also used by L2/R2, so don’t overwrite those
+        // 
         if (!master.get_digital(DIGITAL_R2) &&
             !master.get_digital(DIGITAL_L2)) {
             indexer.move(0);
@@ -128,7 +133,7 @@ while (true) {
         }
     }
 
-    // --- L2 ---
+    //L2
     if (master.get_digital(DIGITAL_L2)) {
         indexer.move(127);
         intake.move(127);
@@ -151,9 +156,12 @@ while (true) {
 
     // --- Up (scraper) ---
     if (master.get_digital(DIGITAL_UP)) {
-        scraper.set_value(true);
-    } else {
-        scraper.set_value(false);
+        if (!scraperon) {
+        scraper.set_value(true);}
+        scraperon = true;
+        if (scraperon) {
+        scraper.set_value(false);}
+        scraperon = false;
     }
 
     pros::delay(20);
@@ -162,7 +170,7 @@ while (true) {
 
 
         pros::delay(20);
-    }
+    
 }
 
 // --- Move in direction by length ---
