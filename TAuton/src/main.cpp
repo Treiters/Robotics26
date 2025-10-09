@@ -36,7 +36,7 @@ pros::ADIDigitalOut scraper(5);
 
 
 double circumference = 2 * 3.14159; // wheel circumference in inches
-bool flapopen = false;
+// bool flapopen = false;
 bool scraperon = false; 
 
 // --- Function Declarations ---
@@ -138,12 +138,12 @@ void drivetrain(void) {
     if (master.get_digital(DIGITAL_R1)) {
         intake.move(127);
         topintake.move(127);
-        if (!flapopen) {
-        flap.set_value(true);}
-        flapopen = true;
-        if (flapopen) {
-        flap.set_value(false);}
-        flapopen = false;
+        //if (!flapopen) {
+        //flap.set_value(true);}
+        //flapopen = true;
+        //if (flapopen) {
+        //flap.set_value(false);}
+        //flapopen = false;
     } else {
         
         intake.move(0);
