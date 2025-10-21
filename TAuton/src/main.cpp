@@ -10,10 +10,12 @@ pros::Motor right_F1(-20);
 pros::Motor right_F2(19);  
 pros::Motor left_F1(11);   
 pros::Motor left_F2(-12);    
-pros::Motor right_R1(-20);
-pros::Motor right_R2(-19);
-pros::Motor left_R1(9);    //1 = 11W , 2 = 5W 
-pros::Motor left_R2(10);
+pros::Motor right_R1(-17);
+pros::Motor right_R2(-18);
+pros::Motor left_R1(13);    //1 = 11W , 2 = 5W 
+pros::Motor left_R2(14);
+
+
 pros::Motor intake(1);
 pros::Motor indexer(2);
 pros::Motor topintake(3);
@@ -24,15 +26,58 @@ pros::MotorGroup left_F({-1,-2});
 pros::MotorGroup right_R({20,19});
 pros::MotorGroup left_R({-9,-10});
 
+
+
+pros::Imu imu(10);
+
+lemlib::Drivetrain drivetrain(
+    left_F, left_R, right_F, right_R, // For tank drives
+    12.5, // wheel track in inches
+    2,// wheel diameter
+    800,
+    lemlib::DriveType::X_DRIVE,
+
+);
+// linear settings 
+lemlib::ControllerSettings linearSettings(
+    10.0f,  // kP
+    0.0f,   // kI (start at 0)
+    3.0f,   // kD
+    3.0f,   // windupRange (anti-windup)
+    0.25f,   // smallError (inches)
+    100.0f, // smallErrorTimeout (ms)
+    1.0f,   // largeError (inches)
+    500.0f, // largeErrorTimeout (ms)
+    5.0f    // slew (max accel)
+);
+
+// Angular settings
+lemlib::ControllerSettings angularSettings(
+    2.0f,   // kP
+    0.0f,   // kI
+    10.0f,  // kD
+    0.0f,   // windupRange
+    1.0f,   // smallError (degrees)
+    100.0f, // smallErrorTimeout (ms)
+    3.0f,   // largeError (degrees)
+    500.0f, // largeErrorTimeout (ms)
+    5.0f    // slew
+);
+
+lemlib::OdomSensors sensors(nullptr, nullptr, nullptr, &imu);
+
+
+
+
 // Group for ALL wheels
 pros::MotorGroup allwheels({
     -11, -12, -1, -2, 20, 19, 9, 10 
 });
 
 
-pros::ADIDigitalOut flap(4);
+//pros::adi::DigitalOut flap(4);
 
-pros::ADIDigitalOut scraper(5);
+pros::adi::DigitalOut scraper(5);
 
 
 double circumference = 2 * 3.14159; // wheel circumference in inches
@@ -43,18 +88,14 @@ bool scraperon = false;
 void drivetrain();
 void move(double degree, double length);
 void turn(double degree);
-
+void autonomous();
 // --- Main ---
 void initialize() {
     pros::lcd::initialize();
     pros::lcd::set_text(1, "Hello PROS User!");
 }
-pros::MotorGroup left_motors({11, -12, 9, 10});
-pros::MotorGroup right_motors({-20, 19, -19, -20});
-lemlib::Drivetrain drivetrain_lem(&left_motors, &right_motors, 10.5, lemlib::Omniwheel::NEW_325, 360, 2);
-lemlib::OdomSensors sensors(nullptr, nullptr, nullptr, nullptr, nullptr);
-lemlib::Chassis chassis(drivetrain_lem, sensors);
-
+//autonomous code
+ lemlib::Chassis chassis(drivetrain,linearController,angularController,sensors);
 void autonomous() {
     std::vector<lemlib::Pose> path = {
         { -63.097, -8.635, 12.545 },
@@ -99,13 +140,12 @@ void autonomous() {
         { -34.971, -33.412, 21.981 },
         { -36.818, -34.179, 21.955 }
     };
-    chassis.generatePath(path, "starterPath");
-    chassis.follow("starterPath", true);
+    chassis.follow(path, true);
     chassis.waitUntilDone();
 }
 void disabled() {}
 void competition_initialize() {}
-void autonomous() {}
+
 
 void opcontrol() {
     while (true) {
