@@ -2,6 +2,7 @@
 #include <cmath>
 #include <algorithm>
 #include "lemlib/api.hpp"
+#include "pros/motors.hpp"
 
 pros::Controller master(pros::E_CONTROLLER_MASTER);
 
@@ -21,23 +22,29 @@ pros::Motor indexer(2);
 pros::Motor topintake(3);
 
 // Groups (each side)
-pros::MotorGroup right_F({-11,-12});
-pros::MotorGroup left_F({-1,-2});
-pros::MotorGroup right_R({20,19});
-pros::MotorGroup left_R({-9,-10});
+pros::MotorGroup right_F({-20,19});
+pros::MotorGroup left_F({11,-12});
+pros::MotorGroup right_R({-17,-18});
+pros::MotorGroup left_R({13,14});
 
-
+pros::MotorGroup leftMotors({11, -12, 13, 14});
+pros::MotorGroup rightMotors({-20, 19, -17, -18});
 
 pros::Imu imu(10);
 
-lemlib::Drivetrain drivetrain(
-    left_F, left_R, right_F, right_R, // For tank drives
-    12.5, // wheel track in inches
-    2,// wheel diameter
-    800,
-    lemlib::DriveType::X_DRIVE,
+lemlib::Drivetrain drivetrain(&leftMotors, &rightMotors,
+                               12.75,  // track width (inches) - MEASURE YOUR ROBOT
+                               lemlib::Omniwheel::NEW_275,  // wheel diameter
+                               360,    // drive motor rpm (all motors on blue cartridge = 200rpm, adjust if different)
+                               2);     // horizontal drift (tune this)
 
-);
+// Odometry configuration
+lemlib::OdomSensors sensors(nullptr,  // vertical tracking wheel (use nullptr if not using)
+                            nullptr,  // vertical tracking wheel 2 (use nullptr if not using)
+                            nullptr,  // horizontal tracking wheel (use nullptr if not using)
+                            nullptr,  // horizontal tracking wheel 2 (use nullptr if not using)
+                            &imu);    // inertial sensor
+
 // linear settings 
 lemlib::ControllerSettings linearSettings(
     10.0f,  // kP
@@ -64,7 +71,7 @@ lemlib::ControllerSettings angularSettings(
     5.0f    // slew
 );
 
-lemlib::OdomSensors sensors(nullptr, nullptr, nullptr, &imu);
+
 
 
 
@@ -85,7 +92,7 @@ double circumference = 2 * 3.14159; // wheel circumference in inches
 bool scraperon = false; 
 
 // --- Function Declarations ---
-void drivetrain();
+void drivertrain();
 void move(double degree, double length);
 void turn(double degree);
 void autonomous();
@@ -95,7 +102,7 @@ void initialize() {
     pros::lcd::set_text(1, "Hello PROS User!");
 }
 //autonomous code
- lemlib::Chassis chassis(drivetrain,linearController,angularController,sensors);
+ lemlib::Chassis chassis(drivetrain,linearSettings,angularSettings, sensors);
 void autonomous() {
     std::vector<lemlib::Pose> path = {
         { -63.097, -8.635, 12.545 },
@@ -140,26 +147,21 @@ void autonomous() {
         { -34.971, -33.412, 21.981 },
         { -36.818, -34.179, 21.955 }
     };
-    chassis.follow(path, true);
+    
     chassis.waitUntilDone();
 }
 void disabled() {}
 void competition_initialize() {}
 
 
-void opcontrol() {
-    while (true) {
-        // Arcade drive
-        drivetrain();
-    }
-}
+
 
 // --- Drivetrain for Mecanum (example) ---
-void drivetrain(void) {
+void drivertrain(void) {
     while (true) {
-        int vertical = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-        int horizontal = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
-        int strafe = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X);
+        double vertical = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
+        double horizontal = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
+        double strafe = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X);
 
         double maxval = std::max({fabs(vertical + strafe +horizontal), fabs(vertical + strafe -horizontal),fabs(vertical - strafe + horizontal), fabs(vertical - strafe -horizontal), 1.0});
 
@@ -284,7 +286,13 @@ void turn(double degree) {
     left_F.move(horizontal);
     left_R.move(horizontal);
 }
+void opcontrol() {
+    while (true) {
+        // Arcade drive
+        drivertrain();
+    }
+}
 int main() {
-    drivetrain();
+    drivertrain();
     return 0;
 }
