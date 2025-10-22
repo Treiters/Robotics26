@@ -3,6 +3,8 @@
 #include <algorithm>
 #include "lemlib/api.hpp"
 #include "pros/motors.hpp"
+ASSET(firstpath_json);
+
 
 pros::Controller master(pros::E_CONTROLLER_MASTER);
 
@@ -72,6 +74,7 @@ lemlib::ControllerSettings angularSettings(
 );
 
 
+ lemlib::Chassis chassis(drivetrain,linearSettings,angularSettings, sensors);
 
 
 
@@ -100,56 +103,16 @@ void autonomous();
 void initialize() {
     pros::lcd::initialize();
     pros::lcd::set_text(1, "Hello PROS User!");
+    chassis.calibrate();
+    
 }
 //autonomous code
- lemlib::Chassis chassis(drivetrain,linearSettings,angularSettings, sensors);
 void autonomous() {
-    std::vector<lemlib::Pose> path = {
-        { -63.097, -8.635, 12.545 },
-        { -61.359, -9.623, 21.172 },
-        { -59.656, -10.671, 21.963 },
-        { -57.955, -11.723, 21.748 },
-        { -56.25, -12.768, 21.63 },
-        { -54.537, -13.8, 21.527 },
-        { -52.813, -14.814, 21.423 },
-        { -51.076, -15.806, 21.305 },
-        { -49.324, -16.771, 21.159 },
-        { -47.555, -17.704, 20.971 },
-        { -45.767, -18.599, 20.716 },
-        { -43.954, -19.445, 20.554 },
-        { -42.115, -20.229, 20.129 },
-        { -40.243, -20.933, 19.081 },
-        { -38.333, -21.524, 17.894 },
-        { -36.38, -21.953, 16.008 },
-        { -34.391, -22.126, 10.884 },
-        { -32.399, -21.995, 22 },
-        { -30.399, -21.977, 22 },
-        { -28.399, -21.959, 22 },
-        { -26.399, -21.942, 22 },
-        { -24.399, -21.924, 22 },
-        { -22.399, -21.907, 22 },
-        { -20.399, -21.889, 22 },
-        { -18.399, -21.871, 22 },
-        { -16.399, -21.864, 17.226 },
-        { -14.407, -22.003, 2.114 },
-        { -13.374, -23.149, 0 },
-        { -14.918, -24.401, 17.188 },
-        { -16.657, -25.388, 20.1 },
-        { -18.444, -26.285, 21.096 },
-        { -20.253, -27.138, 21.351 },
-        { -22.076, -27.96, 21.653 },
-        { -23.908, -28.763, 21.747 },
-        { -25.746, -29.553, 21.818 },
-        { -27.587, -30.333, 21.875 },
-        { -29.431, -31.108, 21.92 },
-        { -31.277, -31.878, 21.958 },
-        { -33.123, -32.646, 21.99 },
-        { -34.971, -33.412, 21.981 },
-        { -36.818, -34.179, 21.955 }
-    };
-    
+    chassis.setPose(-63.097, -8.635, 12.545);
+    chassis.follow(firstpath_json,true, false);
     chassis.waitUntilDone();
-}
+}    
+
 void disabled() {}
 void competition_initialize() {}
 
@@ -261,38 +224,9 @@ void drivertrain(void) {
     
 }
 
-// --- Move in direction by length ---
-void move(double degree, double length) {
-    double radians = degree * 3.1415 / 180;
-    double y = sin(radians);
-    double x = cos(radians);
-
-    double maxval = std::max({fabs(x + y), fabs(x - y), 1.0});
-
-    double frontleft = (y + x) / maxval;
-    double frontright = (y - x) / maxval;
-
-    double spins = length / circumference;
-
-    // Move all wheels by target spins
-    allwheels.move_relative(spins * 360, 100);
-}
-
-// --- Turn by degrees ---
-void turn(double degree) {
-    double horizontal = degree * circumference;
-    right_F.move(-horizontal);
-    right_R.move(-horizontal);
-    left_F.move(horizontal);
-    left_R.move(horizontal);
-}
 void opcontrol() {
-    while (true) {
+    
         // Arcade drive
         drivertrain();
-    }
-}
-int main() {
-    drivertrain();
-    return 0;
+    
 }
