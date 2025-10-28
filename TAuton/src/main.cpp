@@ -230,3 +230,10 @@ void opcontrol() {
         drivertrain();
     
 }
+int main () {
+    initialize();
+    while (true) {
+        pros::delay(100);
+    }
+    return 0;
+}
