@@ -220,7 +220,7 @@ void drivertrain(void) {
 
 
 
-        pros::delay(20);
+        
     
 }
 
@@ -230,10 +230,18 @@ void opcontrol() {
         drivertrain();
     
 }
-int main () {
+int main() {
+    pros::Task autonomous_task([] {
+        autonomous();
+    });
+    pros::Task opcontrol_task([] {
+        opcontrol();
+    });
+    
     initialize();
+    
+
     while (true) {
-        pros::delay(100);
+        pros::delay(20);
     }
-    return 0;
 }
