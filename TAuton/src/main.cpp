@@ -1,6 +1,5 @@
 #include "main.h"
 #include <cmath>
-#include <algorithm>
 #include "lemlib/api.hpp"
 #include "pros/motors.hpp"
 ASSET(firstpath_json);
@@ -29,12 +28,23 @@ pros::MotorGroup left_F({11,-12});
 pros::MotorGroup right_R({-17,-18});
 pros::MotorGroup left_R({13,14});
 
-pros::MotorGroup leftMotors({11, -12, 13, 14});
-pros::MotorGroup rightMotors({-20, 19, -17, -18});
+pros::MotorGroup left_side({
+    11,   // FL
+    -12,  // FL2
+    13,   // BL
+    14    // BL2
+});
 
+// RIGHT SIDE
+pros::MotorGroup right_side({
+    -20,  // FR (reversed)
+    19,   // FR2
+    -17,  // BR (reversed)
+    -18   // BR2 (reversed)
+});
 pros::Imu imu(10);
 
-lemlib::Drivetrain drivetrain(&leftMotors, &rightMotors,
+lemlib::Drivetrain drivetrain(&left_side, &right_side,
                                12.75,  // track width (inches) - MEASURE YOUR ROBOT
                                lemlib::Omniwheel::NEW_275,  // wheel diameter
                                360,    // drive motor rpm (all motors on blue cartridge = 200rpm, adjust if different)
@@ -123,19 +133,11 @@ void competition_initialize() {}
 void drivertrain(void) {
     while (true) {
         double vertical = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-        double horizontal = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
+        double spin = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
         double strafe = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X);
 
-        double maxval = std::max({fabs(vertical + strafe +horizontal), fabs(vertical + strafe -horizontal),fabs(vertical - strafe + horizontal), fabs(vertical - strafe -horizontal), 1.0});
-
-
-        double topleft = vertical + strafe;
-        double topright = vertical - strafe;
-
-        right_F.move((topright - horizontal)/maxval);
-        left_R.move((topright + horizontal)/maxval);
-        right_R.move((topleft - horizontal)/maxval);
-        left_F.move((topleft + horizontal)/maxval);
+        chassis.arcade(strafe, vertical, spin); // lemlib cheatcode
+        pros::delay(20);
 
         // drive part of drivetrain
 

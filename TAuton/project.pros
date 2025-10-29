@@ -594,8 +594,8 @@
     "upload_options": {
       "slot": 3,
       "icon": "pizza",
-      "description": "date: 10/28",
-      "after": "run"
+      "description": "date: 10/29",
+      "after": "screen"
     },
     "use_early_access": false
   }
