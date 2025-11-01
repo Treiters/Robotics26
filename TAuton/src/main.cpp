@@ -136,8 +136,16 @@ void drivertrain(void) {
         double spin = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
         double strafe = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X);
 
-        chassis.arcade(strafe, vertical, spin); // lemlib cheatcode
-        pros::delay(20);
+        double maxval = std::max({fabs(vertical + strafe +spin), fabs(vertical + strafe -spin),fabs(vertical - strafe + spin), fabs(vertical - strafe -spin), 1.0});
+
+
+        double topleft = vertical + strafe;
+        double topright = vertical - strafe;
+
+        right_F.move((topright - spin)/maxval);
+        left_R.move((topright + spin)/maxval);
+        right_R.move((topleft - spin)/maxval);
+        left_F.move((topleft + spin)/maxval);
 
         // drive part of drivetrain
 
